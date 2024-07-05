@@ -292,7 +292,7 @@ function talk_setup(p) {
   );
   colorPicker.position(20, p.height - 120);
   colorPicker.size(100, 100);
-  loaded_color = p.color(123, 219, 182);
+  loaded_color = p.color(123, 219, 200);
 
   loaded_layer = p.createGraphics(size.x, size.y);
   loaded_layer.clear();
@@ -330,11 +330,6 @@ function talk_draw(p) {
   currentTime = movie.time();
   user_rest_frame++;
   colorPicked = colorPicker.color();
-  merged_color = p.color(
-    (p.red(colorPicked) + p.red(loaded_color)) / 2,
-    (p.green(colorPicked) + p.green(loaded_color)) / 2,
-    (p.blue(colorPicked) + p.blue(loaded_color)) / 2
-  );
 
   if (sending) {
     talk_particles = [];
@@ -441,6 +436,23 @@ function talk_mouseReleased(p) {
   user_lines.push(prev_logline);
   prev_logline = false;
   user_rest_frame = 0;
+
+  let new_r = (p.red(colorPicked) + p.red(loaded_color)) / 2;
+  let new_g = (p.green(colorPicked) + p.green(loaded_color)) / 2;
+  let new_b = (p.blue(colorPicked) + p.blue(loaded_color)) / 2;
+  let max = Math.max(new_r, new_g, new_b);
+  let lag = 0;
+  if (max === new_r) {
+    lag = 255 - new_r;
+  } else if (max === new_g) {
+    lag = 255 - new_g;
+  } else if (max === new_b) {
+    lag = 255 - new_b;
+  }
+  new_r += lag;
+  new_g += lag;
+  new_b += lag;
+  merged_color = p.color(new_r, new_g, new_b);
 }
 
 function player_logs(f, p) {
