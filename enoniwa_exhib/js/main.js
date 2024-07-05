@@ -93,7 +93,7 @@ function screen_saver_setup(p) {
   pallete_cold.push(p.color(93, 189, 162));
 
   pallete_warm.push(p.color(285, 158, 0));
-  pallete_warm.push(p.color(240, 176, 206));
+  pallete_warm.push(p.color(255, 184, 217));
 
   p.createCanvas(size.x, size.y);
 
@@ -232,6 +232,12 @@ let loaded_layer;
 let user_layer;
 let effect_layer;
 
+let colorPicker;
+let colorPicked;
+
+let loaded_color;
+let merged_color;
+
 let prev_logline;
 let prev_point;
 
@@ -280,19 +286,20 @@ function talk_setup(p) {
   movie.play();
   movie_duration = movie.elt.duration;
 
+  //UI
+  colorPicker = p.createColorPicker(
+    pallete_warm[p.int(p.random(pallete_warm.length))]
+  );
+  colorPicker.position(20, p.height - 120);
+  colorPicker.size(100, 100);
+  loaded_color = p.color(123, 219, 182);
+
   loaded_layer = p.createGraphics(size.x, size.y);
   loaded_layer.clear();
   user_layer = p.createGraphics(size.x, size.y);
   user_layer.clear();
   effect_layer = p.createGraphics(size.x, size.y);
   effect_layer.clear();
-
-  pallete_cold.push(p.color(255, 179, 189));
-  pallete_cold.push(p.color(11, 75, 132));
-  pallete_cold.push(p.color(123, 219, 182));
-
-  pallete_warm.push(p.color(285, 158, 0));
-  pallete_warm.push(p.color(240, 176, 206));
 
   send_button = p.createButton("送る");
   send_button.mouseClicked(send_pressed);
@@ -305,6 +312,7 @@ function talk_setup(p) {
   send_button.style("border-color", "rgb(0,0,0,0.6)");
   send_button.style("border-radius", "40px");
   send_button.style("display", "none");
+  send_button.style("z-index", "4");
 }
 function endTalk() {
   console.log("end");
@@ -313,6 +321,7 @@ function endTalk() {
   talk_particles = [];
   sending = false;
   sending_time = 0;
+  user_rest_frame = 0;
   current_sketch.remove();
   startScreenSaver();
 }
@@ -320,8 +329,16 @@ function endTalk() {
 function talk_draw(p) {
   currentTime = movie.time();
   user_rest_frame++;
+  colorPicked = colorPicker.color();
+  merged_color = p.color(
+    (p.red(colorPicked) + p.red(loaded_color)) / 2,
+    (p.green(colorPicked) + p.green(loaded_color)) / 2,
+    (p.blue(colorPicked) + p.blue(loaded_color)) / 2
+  );
+
   if (sending) {
     talk_particles = [];
+    colorPicker.remove();
     p.background(255);
     p.translate(p.width / 2, p.height / 2); // 画面の中心に移動
     p.scale(1 - sending_time * 0.01);
@@ -360,7 +377,7 @@ function draw_loaded(p, currentTime) {
   for (let line of loaded_lines) {
     let points_length = line.points_length();
     p.strokeWeight(20);
-    p.stroke(p.color(123, 219, 182));
+    p.stroke(loaded_color);
 
     for (let i = 0; i < points_length - 1; i++) {
       let point_1 = line.get_point(p.int(i));
@@ -398,7 +415,8 @@ function draw_loaded(p, currentTime) {
                   point_1.x() * size.x,
                   point_1.y() * size.y,
                   300,
-                  p
+                  p,
+                  merged_color
                 )
               );
             }
@@ -437,7 +455,7 @@ function player_logs(f, p) {
     // let dist_from_prev = p.int(
     //   p.dist(prev_point.x, prev_point.y, p.mouseX, p.mouseY)
     // );
-    user_layer.stroke(255, 200, 10);
+    user_layer.stroke(colorPicked);
     // user_layer.strokeWeight((1 + 3 / Math.sqrt(dist_from_prev + 5)) * 10);
     user_layer.strokeWeight(20);
     user_layer.noFill();
@@ -460,7 +478,7 @@ function draw_particles(p) {
 }
 
 class effectParticle {
-  constructor(_x, _y, _size, p) {
+  constructor(_x, _y, _size, p, _color) {
     this.life = p.random(10);
     this.speed = p.random(10) / 10;
     this.seed = p.random(100);
@@ -471,20 +489,21 @@ class effectParticle {
     this.y = _y;
     this.fract = 0;
     this.old = 0;
+    this.color = _color;
   }
   update(p) {
     this.vector.x +=
       (2 * p.noise(this.seed, 100, this.fract) - 1) * 0.4 * this.speed;
     this.vector.y +=
       (2 * p.noise(this.seed - 100, 120, this.fract) - 1) * 0.4 * this.speed;
-    this.x += this.vector.x * 4;
-    this.y += this.vector.y * 4;
+    this.x += this.vector.x * 3;
+    this.y += this.vector.y * 3;
     this.fract += 0.5;
     this.old = this.fract / this.life;
   }
   display(_graphic) {
     _graphic.noStroke();
-    _graphic.fill(200, 200, 255, 100);
+    _graphic.fill(this.color);
     _graphic.circle(this.x, this.y, 1 + this.fract);
   }
 }
