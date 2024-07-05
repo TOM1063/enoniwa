@@ -264,16 +264,22 @@ const talk = (p) => {
 
 function talk_preload(p) {
   let line_file;
-  if (scene % 2 == 0) {
+  if (scene % 3 == 0) {
     line_file = "./data/lines/lines_utouto_long.csv";
     movie_file = "./data/movie/utouto_trimed.mov";
     stroke_weight = 20;
     resolution = 2;
     console.log("set file 1 : ", line_file, movie);
-  } else if (scene % 2 == 1) {
+  } else if (scene % 3 == 1) {
     line_file = "./data/lines/lines_kurukuru.csv";
     movie_file = "./data/movie/kurukuru_trimed_low.mov";
     stroke_weight = 10;
+    resolution = 1;
+    console.log("set file 2 : ", line_file, movie);
+  } else if (scene % 3 == 2) {
+    line_file = "./data/lines/lines_ueshita.csv";
+    movie_file = "./data/movie/ueshita_trimed.mov";
+    stroke_weight = 20;
     resolution = 1;
     console.log("set file 2 : ", line_file, movie);
   }
@@ -325,7 +331,8 @@ function talk_setup(p) {
   send_button.style("border-color", "rgb(0,0,0,0.6)");
   send_button.style("border-radius", "40px");
   send_button.style("display", "none");
-  send_button.style("z-index", "4");
+  send_button.style("z-index", "10");
+  send_button.style("cursor", "pointer");
 }
 function endTalk() {
   console.log("end");
@@ -336,6 +343,7 @@ function endTalk() {
   sending_time = 0;
   user_rest_frame = 0;
   current_sketch.remove();
+  send_button.remove();
   movie.remove();
   startScreenSaver();
 }
