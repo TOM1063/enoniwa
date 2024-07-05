@@ -228,6 +228,7 @@ let user_lines = [];
 let talk_particles = [];
 let movie;
 let movie_duration;
+let movie_file;
 let loaded_layer;
 let user_layer;
 let effect_layer;
@@ -250,6 +251,9 @@ let send_button;
 let sending = false;
 let sending_time = 0;
 
+let stroke_weight;
+let resolution;
+
 const talk = (p) => {
   p.preload = () => talk_preload(p);
   p.setup = () => talk_setup(p);
@@ -259,15 +263,24 @@ const talk = (p) => {
 };
 
 function talk_preload(p) {
-  p.table = p.loadTable(
-    "./data/lines/lines_utouto_long.csv",
-    "csv",
-    "header",
-    () => {
-      loaded_lines = getLinesFromTable(p.table);
-      // console.log("loaded_lines:", loaded_lines);
-    }
-  );
+  let line_file;
+  if (scene % 2 == 0) {
+    line_file = "./data/lines/lines_utouto_long.csv";
+    movie_file = "./data/movie/utouto_trimed.mov";
+    stroke_weight = 20;
+    resolution = 2;
+    console.log("set file 1 : ", line_file, movie);
+  } else if (scene % 2 == 1) {
+    line_file = "./data/lines/lines_kurukuru.csv";
+    movie_file = "./data/movie/kurukuru_trimed_low.mov";
+    stroke_weight = 10;
+    resolution = 1;
+    console.log("set file 2 : ", line_file, movie);
+  }
+  p.table = p.loadTable(line_file, "csv", "header", () => {
+    loaded_lines = getLinesFromTable(p.table);
+    // console.log("loaded_lines:", loaded_lines);
+  });
 }
 
 function talk_setup(p) {
@@ -278,7 +291,7 @@ function talk_setup(p) {
     x: window.innerWidth,
     y: window.innerHeight,
   };
-  movie = p.createVideo("./data/movie/utouto_trimed.mov");
+  movie = p.createVideo(movie_file);
   movie.size(size.x, size.y);
   movie.volume(0);
   movie.muted = true; //だいじ
@@ -323,11 +336,13 @@ function endTalk() {
   sending_time = 0;
   user_rest_frame = 0;
   current_sketch.remove();
+  movie.remove();
   startScreenSaver();
 }
 
 function talk_draw(p) {
   currentTime = movie.time();
+  console.log(currentTime);
   user_rest_frame++;
   colorPicked = colorPicker.color();
 
@@ -371,7 +386,7 @@ function draw_loaded(p, currentTime) {
   // loaded_layer.background(0);
   for (let line of loaded_lines) {
     let points_length = line.points_length();
-    p.strokeWeight(20);
+    p.strokeWeight(stroke_weight);
     p.stroke(loaded_color);
 
     for (let i = 0; i < points_length - 1; i++) {
@@ -403,7 +418,8 @@ function draw_loaded(p, currentTime) {
                 point_1.y() * size.y,
                 size.x,
                 size.y
-              )
+              ) &&
+              p.random(3) > resolution
             ) {
               talk_particles.push(
                 new effectParticle(
@@ -469,7 +485,7 @@ function player_logs(f, p) {
     // );
     user_layer.stroke(colorPicked);
     // user_layer.strokeWeight((1 + 3 / Math.sqrt(dist_from_prev + 5)) * 10);
-    user_layer.strokeWeight(20);
+    user_layer.strokeWeight(stroke_weight);
     user_layer.noFill();
     user_layer.line(prev_point.x, prev_point.y, p.mouseX, p.mouseY);
   }
@@ -526,7 +542,7 @@ function getLinesFromTable(_table) {
   let lines = [];
   let fract = 0;
   let first_time = 0;
-  for (let i = 0; i < _table.getRowCount(); i += 3) {
+  for (let i = 0; i < _table.getRowCount(); i += resolution) {
     let frame = i;
     let id = _table.getString(i, 0);
     let u = _table.getString(i, 1);
