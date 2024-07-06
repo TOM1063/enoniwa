@@ -107,6 +107,7 @@ function screen_saver_setup(p) {
   start_button.style("color", "rgb(0,0,0,0.6)");
   start_button.style("border-color", "rgb(0,0,0,0.6)");
   start_button.style("border-radius", "40px");
+  start_button.style("cursor", "pointer");
 
   for (let i = 0; i < 10; i++) {
     particles.push(
@@ -270,18 +271,21 @@ function talk_preload(p) {
     stroke_weight = 20;
     resolution = 2;
     console.log("set file 1 : ", line_file, movie);
+    loaded_color = p.color(pallete_cold[0]);
   } else if (scene % 3 == 1) {
     line_file = "./data/lines/lines_kurukuru.csv";
     movie_file = "./data/movie/kurukuru_trimed_low.mov";
     stroke_weight = 10;
     resolution = 1;
     console.log("set file 2 : ", line_file, movie);
+    loaded_color = p.color(pallete_cold[1]);
   } else if (scene % 3 == 2) {
     line_file = "./data/lines/lines_ueshita.csv";
     movie_file = "./data/movie/ueshita_trimed.mov";
     stroke_weight = 20;
     resolution = 1;
     console.log("set file 2 : ", line_file, movie);
+    loaded_color = p.color(pallete_cold[2]);
   }
   p.table = p.loadTable(line_file, "csv", "header", () => {
     loaded_lines = getLinesFromTable(p.table);
@@ -311,7 +315,6 @@ function talk_setup(p) {
   );
   colorPicker.position(20, p.height - 120);
   colorPicker.size(100, 100);
-  loaded_color = p.color(123, 219, 200);
 
   loaded_layer = p.createGraphics(size.x, size.y);
   loaded_layer.clear();
