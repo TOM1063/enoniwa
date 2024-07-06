@@ -62,9 +62,14 @@ function nextScene() {
 
 //キャプチャ
 function capture(p) {
-  // console.log("capture");
-  // p.save("capture" + String(Date.now()) + ".png");
-  // capture_index++;
+  console.log("capture");
+  p.save("capture" + String(Date.now()) + ".png");
+  capture_index++;
+}
+
+function capture_user(_user_layer) {
+  console.log("capture_user");
+  _user_layer.save("user_capture" + String(Date.now()) + ".png");
 }
 
 //実行
@@ -358,6 +363,10 @@ function talk_draw(p) {
   colorPicked = colorPicker.color();
 
   if (sending) {
+    if (sending_time == 0) {
+      capture(p);
+      capture_user(user_layer);
+    }
     talk_particles = [];
     colorPicker.remove();
     p.background(255);
