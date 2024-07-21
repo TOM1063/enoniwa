@@ -72,6 +72,11 @@ function capture_user(_user_layer) {
   _user_layer.save("user_capture" + String(Date.now()) + ".png");
 }
 
+function capture_loaded(_loaded_layer) {
+  console.log("capture_loaded");
+  _loaded_layer.save("loaded_capture" + String(Date.now()) + ".png");
+}
+
 //実行
 init().then(() => {
   initialize();
@@ -232,9 +237,6 @@ function sketch_draw(p) {
 let loaded_lines = [];
 let user_lines = [];
 let talk_particles = [];
-let movie;
-let movie_duration;
-let movie_file;
 let loaded_layer;
 let user_layer;
 let effect_layer;
@@ -248,7 +250,7 @@ let merged_color;
 let prev_logline;
 let prev_point;
 
-let currentTime;
+let currentTime = 0;
 let current_id = 0;
 
 let user_rest_frame = 0;
@@ -272,24 +274,18 @@ function talk_preload(p) {
   let line_file;
   if (scene % 3 == 0) {
     line_file = "./data/lines/lines_utouto_long.csv";
-    movie_file = "./data/movie/utouto_trimed.mov";
     stroke_weight = 20;
     resolution = 2;
-    console.log("set file 1 : ", line_file, movie);
     loaded_color = p.color(pallete_cold[0]);
   } else if (scene % 3 == 1) {
     line_file = "./data/lines/lines_kurukuru.csv";
-    movie_file = "./data/movie/kurukuru_trimed_low.mov";
     stroke_weight = 10;
     resolution = 1;
-    console.log("set file 2 : ", line_file, movie);
     loaded_color = p.color(pallete_cold[1]);
   } else if (scene % 3 == 2) {
     line_file = "./data/lines/lines_ueshita.csv";
-    movie_file = "./data/movie/ueshita_trimed.mov";
     stroke_weight = 20;
     resolution = 1;
-    console.log("set file 2 : ", line_file, movie);
     loaded_color = p.color(pallete_cold[2]);
   }
   p.table = p.loadTable(line_file, "csv", "header", () => {
@@ -306,13 +302,6 @@ function talk_setup(p) {
     x: window.innerWidth,
     y: window.innerHeight,
   };
-  movie = p.createVideo(movie_file);
-  movie.size(size.x, size.y);
-  movie.volume(0);
-  movie.muted = true; //だいじ
-  movie.hide();
-  movie.play();
-  movie_duration = movie.elt.duration;
 
   //UI
   colorPicker = p.createColorPicker(
@@ -352,12 +341,10 @@ function endTalk() {
   user_rest_frame = 0;
   current_sketch.remove();
   send_button.remove();
-  movie.remove();
   startScreenSaver();
 }
 
 function talk_draw(p) {
-  currentTime = movie.time();
   console.log(currentTime);
   user_rest_frame++;
   colorPicked = colorPicker.color();
@@ -390,6 +377,8 @@ function talk_draw(p) {
   } else {
     send_button.style("display", "none");
   }
+
+  currentTime += 1 / 60;
 }
 
 function send_pressed() {
